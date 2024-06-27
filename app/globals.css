@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-blue: #5a67d8;
+  --color-pink: #d85aa6;
+  --color-yellow: #d8cb5a;
+  --color-green: #5ad88c;
+}
+
+/* Texte */
+.text-blue {
+  color: var(--color-blue);
+}
+.text-pink {
+  color: var(--color-pink);
+}
+.text-yellow {
+  color: var(--color-yellow);
+}
+.text-green {
+  color: var(--color-green);
+}
+
+/* Bordures */
+.border-blue {
+  border-color: var(--color-blue);
+}
+.border-pink {
+  border-color: var(--color-pink);
+}
+.border-yellow {
+  border-color: var(--color-yellow);
+}
+.border-green {
+  border-color: var(--color-green);
+}
+
+/* Arrière-plans */
+.bg-blue {
+  background-color: var(--color-blue);
+}
+.bg-pink {
+  background-color: var(--color-pink);
+}
+.bg-yellow {
+  background-color: var(--color-yellow);
+}
+.bg-green {
+  background-color: var(--color-green);
+}
+
+/* Variantes de transparence pour l'arrière-plan */
+.bg-blue-50 {
+  background-color: rgba(90, 103, 216, 0.5);
+}
+.bg-pink-50 {
+  background-color: rgba(216, 90, 166, 0.5);
+}
+.bg-yellow-50 {
+  background-color: rgba(216, 203, 90, 0.5);
+}
+.bg-green-50 {
+  background-color: rgba(90, 216, 140, 0.5);
+}
+
+/* Hover effects */
+.hover\:text-blue:hover {
+  color: var(--color-blue);
+}
+.hover\:text-pink:hover {
+  color: var(--color-pink);
+}
+.hover\:text-yellow:hover {
+  color: var(--color-yellow);
+}
+.hover\:text-green:hover {
+  color: var(--color-green);
+}
+
+.hover\:bg-blue:hover {
+  background-color: var(--color-blue);
+}
+.hover\:bg-pink:hover {
+  background-color: var(--color-pink);
+}
+.hover\:bg-yellow:hover {
+  background-color: var(--color-yellow);
+}
+.hover\:bg-green:hover {
+  background-color: var(--color-green);
+}
+
+/* Transitions */
+.transition-colors {
+  transition-property: color, background-color, border-color;
+  transition-duration: 300ms;
+  transition-timing-function: ease-in-out;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Bangers&display=swap');
+
+@layer utilities {
+  .stroke-black {
+    -webkit-text-stroke: 2px white;
+  }
+
+  .stroke-2 {
+    -webkit-text-stroke-width: 2px;
+  }
+}
+
+/* .font-manga {
+  font-family: 'System-ui', cursive;
+} */
+
+.hollow-text {
+  color: transparent;
+  -webkit-text-stroke: 2px white;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
