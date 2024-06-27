@@ -38,6 +38,10 @@ function formatImageTitle(str: string): string {
   return str.toLowerCase().replace(/ /g, '-');
 }
 
+function formatMangaTitleForUrl(title: string): string {
+  return title.toLowerCase().replace(/ /g, '-');
+}
+
 export default function Home() {
   const [mangaHistory, setMangaHistory] = useState<MangaHistory[]>([]);
   const [readlist, setReadlist] = useState<ReadlistItem[]>([]);
@@ -52,6 +56,7 @@ export default function Home() {
       localStorage.getItem('mangaReadingHistory') || '[]'
     );
     setMangaHistory(history);
+    console.log(history);
 
     const storedReadlist = JSON.parse(
       localStorage.getItem('mangaReadlist') || '[]'
@@ -104,7 +109,7 @@ export default function Home() {
     ref: React.RefObject<HTMLDivElement>
   ) => {
     if (ref.current) {
-      e.preventDefault();
+      // e.preventDefault();
       ref.current.scrollLeft += e.deltaY;
     }
   };
@@ -131,6 +136,14 @@ export default function Home() {
     );
     const imageUrl = `https://cdn.statically.io/gh/Anime-Sama/IMG/img/contenu/${imageTitle}.jpg`;
 
+    const linkHref = isAllMangas
+      ? `/manga/${(manga as MangaBasic).id}`
+      : isReadlist
+      ? `/manga/${manga.id}`
+      : `/manga/${formatMangaTitleForUrl((manga as MangaHistory).mangaTitle)}/${
+          'Chapter_' + (manga as MangaHistory).chapterNumber
+        }`;
+
     return (
       <div
         key={
@@ -138,10 +151,7 @@ export default function Home() {
         }
         className="relative flex-shrink-0 w-auto h-auto border rounded-lg overflow-hidden hover:shadow-xl transition-transform duration-300 hover:scale-105 group"
       >
-        <Link
-          href={`/manga/${isAllMangas ? (manga as MangaBasic).id : manga.id}`}
-          className="block h-full"
-        >
+        <Link href={linkHref} className="block h-full">
           <div className="relative w-full h-full">
             <div className="relative w-[300px] h-[175px]">
               <Image
@@ -183,9 +193,13 @@ export default function Home() {
                 ? removeMangaFromReadlist(manga.id, e)
                 : removeMangaFromHistory(index, e);
             }}
-            className="absolute top-2 right-2 p-2 rounded-full bg-pink text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            className="absolute top-2 right-2 p-2 rounded-full bg-pink text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-600"
           >
-            {isReadlist ? <FaHeart size={24} /> : <FaTimes size={24} />}
+            {isReadlist ? (
+              <FaHeart className="" size={12} />
+            ) : (
+              <FaTimes size={12} />
+            )}
           </button>
         )}
       </div>

@@ -97,7 +97,7 @@ export default function ChapterPage({
     fetchData();
   }, [fetchData]);
 
-  if (!chapterData) return <div>Loading...</div>;
+  if (!chapterData) return <div className="text-center">Loading...</div>;
 
   const { chapter, prevChapter, nextChapter } = chapterData;
   const imageTitle = formatImageTitle(chapter.mangaTitle);
