@@ -42,6 +42,10 @@ function formatMangaTitleForUrl(title: string): string {
   return title.toLowerCase().replace(/ /g, '-');
 }
 
+const SkeletonLoader = () => (
+  <div className="animate-pulse flex-shrink-0 w-[300px] h-[175px] bg-gray-300 rounded-lg overflow-hidden" />
+);
+
 export default function Home() {
   const [mangaHistory, setMangaHistory] = useState<MangaHistory[]>([]);
   const [readlist, setReadlist] = useState<ReadlistItem[]>([]);
@@ -49,21 +53,31 @@ export default function Home() {
   const readlistRef = useRef<HTMLDivElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
   const allMangasRef = useRef<HTMLDivElement>(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [loadingReadlist, setLoadingReadlist] = useState(true);
+  const [loadingAllMangas, setLoadingAllMangas] = useState(true);
 
   useEffect(() => {
-    const history = JSON.parse(
-      localStorage.getItem('mangaReadingHistory') || '[]'
-    );
-    setMangaHistory(history);
-    console.log(history);
+    const fetchData = async () => {
+      // Charger l'historique
+      const history = JSON.parse(
+        localStorage.getItem('mangaReadingHistory') || '[]'
+      );
+      setMangaHistory(history);
+      setLoadingHistory(false);
 
-    const storedReadlist = JSON.parse(
-      localStorage.getItem('mangaReadlist') || '[]'
-    );
-    setReadlist(storedReadlist);
+      // Charger la liste de lecture
+      const storedReadlist = JSON.parse(
+        localStorage.getItem('mangaReadlist') || '[]'
+      );
+      setReadlist(storedReadlist);
+      setLoadingReadlist(false);
 
-    loadAllMangas();
+      // Charger tous les mangas
+      await loadAllMangas();
+    };
+
+    fetchData();
   }, []);
 
   const loadAllMangas = async () => {
@@ -76,6 +90,8 @@ export default function Home() {
       setAllMangas(mangas);
     } catch (error) {
       console.error('Error loading mangas:', error);
+    } finally {
+      setLoadingAllMangas(false);
     }
   };
 
@@ -109,7 +125,6 @@ export default function Home() {
     ref: React.RefObject<HTMLDivElement>
   ) => {
     if (ref.current) {
-      // e.preventDefault();
       ref.current.scrollLeft += e.deltaY;
     }
   };
@@ -206,110 +221,145 @@ export default function Home() {
     );
   };
 
+  const renderSkeletons = (count: number) => (
+    <div className="flex space-x-4 overflow-x-auto hide-scrollbar p-4">
+      {Array(count)
+        .fill(0)
+        .map((_, index) => (
+          <SkeletonLoader key={index} />
+        ))}
+    </div>
+  );
+
   return (
     <main className="flex flex-col items-center justify-between">
       <div className="z-10 w-full max-w-7xl flex flex-col items-center justify-between font-bold text-sm">
-        {mangaHistory.length > 0 && (
-          <div className="w-full">
-            <h2 className="text-2xl pl-2 text-blue">Historique de lecture</h2>
-            <div className="relative">
-              <div
-                ref={historyRef}
-                className="flex overflow-x-auto space-x-4 hide-scrollbar p-4"
-                onWheel={(e) => handleWheel(e, historyRef)}
-              >
-                {mangaHistory.map((manga, index) =>
-                  renderMangaItem(manga, index, false)
+        {loadingHistory ? (
+          <>
+            <h2 className="w-full text-2xl pl-2 text-blue">
+              Historique de lecture
+            </h2>
+            {renderSkeletons(4)}
+          </>
+        ) : (
+          mangaHistory.length > 0 && (
+            <div className="w-full">
+              <h2 className="text-2xl pl-2 text-blue">Historique de lecture</h2>
+              <div className="relative">
+                <div
+                  ref={historyRef}
+                  className="flex overflow-x-auto space-x-4 hide-scrollbar p-4"
+                  onWheel={(e) => handleWheel(e, historyRef)}
+                >
+                  {mangaHistory.map((manga, index) =>
+                    renderMangaItem(manga, index, false)
+                  )}
+                </div>
+                {mangaHistory.length > 4 && (
+                  <>
+                    <button
+                      onClick={() => scroll(historyRef, -300)}
+                      className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full p-2 z-10 -ml hover:bg-pink transition duration-300"
+                    >
+                      <FaChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={() => scroll(historyRef, 300)}
+                      className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full p-2 z-10 -mr hover:bg-pink transition duration-300"
+                    >
+                      <FaChevronRight size={24} />
+                    </button>
+                  </>
                 )}
               </div>
-              {mangaHistory.length > 4 && (
-                <>
-                  <button
-                    onClick={() => scroll(historyRef, -300)}
-                    className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full p-2 z-10 -ml hover:bg-pink transition duration-300"
-                  >
-                    <FaChevronLeft size={24} />
-                  </button>
-                  <button
-                    onClick={() => scroll(historyRef, 300)}
-                    className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full p-2 z-10 -mr hover:bg-pink transition duration-300"
-                  >
-                    <FaChevronRight size={24} />
-                  </button>
-                </>
-              )}
             </div>
-          </div>
+          )
         )}
 
-        {readlist.length > 0 && (
-          <div className="w-full">
-            <Link href={'/favs'}>
-              <h2 className="text-2xl pl-2 text-blue">Mes mangas à lire</h2>
-            </Link>
-            <div className="relative">
-              <div
-                ref={readlistRef}
-                className="flex overflow-x-auto space-x-4 hide-scrollbar p-4"
-                onWheel={(e) => handleWheel(e, readlistRef)}
-              >
-                {readlist.map((manga, index) =>
-                  renderMangaItem(manga, index, true)
+        {loadingReadlist ? (
+          <>
+            <h2 className="w-full text-2xl pl-2 text-blue">
+              Mes mangas à lire
+            </h2>
+            {renderSkeletons(4)}
+          </>
+        ) : (
+          readlist.length > 0 && (
+            <div className="w-full">
+              <Link href={'/favs'}>
+                <h2 className="text-2xl pl-2 text-blue">Mes mangas à lire</h2>
+              </Link>
+              <div className="relative">
+                <div
+                  ref={readlistRef}
+                  className="flex overflow-x-auto space-x-4 hide-scrollbar p-4"
+                  onWheel={(e) => handleWheel(e, readlistRef)}
+                >
+                  {readlist.map((manga, index) =>
+                    renderMangaItem(manga, index, true)
+                  )}
+                </div>
+                {readlist.length > 4 && (
+                  <>
+                    <button
+                      onClick={() => scroll(readlistRef, -300)}
+                      className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full p-2 z-10 -ml hover:bg-pink transition duration-300"
+                    >
+                      <FaChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={() => scroll(readlistRef, 300)}
+                      className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full p-2 z-10 mr hover:bg-pink transition duration-300"
+                    >
+                      <FaChevronRight size={24} />
+                    </button>
+                  </>
                 )}
               </div>
-              {readlist.length > 4 && (
-                <>
-                  <button
-                    onClick={() => scroll(readlistRef, -300)}
-                    className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full p-2 z-10 -ml hover:bg-pink transition duration-300"
-                  >
-                    <FaChevronLeft size={24} />
-                  </button>
-                  <button
-                    onClick={() => scroll(readlistRef, 300)}
-                    className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full p-2 z-10 mr hover:bg-pink transition duration-300"
-                  >
-                    <FaChevronRight size={24} />
-                  </button>
-                </>
-              )}
             </div>
-          </div>
+          )
         )}
 
-        {allMangas.length > 0 && (
-          <div className="w-full">
-            <Link href={'/manga'}>
-              <h2 className="text-2xl pl-2 text-blue">Tous les mangas</h2>
-            </Link>
-            <div className="relative">
-              <div
-                ref={allMangasRef}
-                className="flex overflow-x-auto space-x-4 hide-scrollbar p-4"
-                onWheel={(e) => handleWheel(e, allMangasRef)}
-              >
-                {allMangas.map((manga, index) =>
-                  renderMangaItem(manga, index, false, true)
+        {loadingAllMangas ? (
+          <>
+            <h2 className="w-full text-2xl pl-2 text-blue">Tous les mangas</h2>
+            {renderSkeletons(4)}
+          </>
+        ) : (
+          allMangas.length > 0 && (
+            <div className="w-full">
+              <Link href={'/manga'}>
+                <h2 className="text-2xl pl-2 text-blue">Tous les mangas</h2>
+              </Link>
+              <div className="relative">
+                <div
+                  ref={allMangasRef}
+                  className="flex overflow-x-auto space-x-4 hide-scrollbar p-4"
+                  onWheel={(e) => handleWheel(e, allMangasRef)}
+                >
+                  {allMangas.map((manga, index) =>
+                    renderMangaItem(manga, index, false, true)
+                  )}
+                </div>
+                {allMangas.length > 4 && (
+                  <>
+                    <button
+                      onClick={() => scroll(allMangasRef, -300)}
+                      className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full p-2 z-10 -ml hover:bg-pink transition duration-300"
+                    >
+                      <FaChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={() => scroll(allMangasRef, 300)}
+                      className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full p-2 z-10 mr hover:bg-pink transition duration-300"
+                    >
+                      <FaChevronRight size={24} />
+                    </button>
+                  </>
                 )}
               </div>
-              {allMangas.length > 4 && (
-                <>
-                  <button
-                    onClick={() => scroll(allMangasRef, -300)}
-                    className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full p-2 z-10 -ml hover:bg-pink transition duration-300"
-                  >
-                    <FaChevronLeft size={24} />
-                  </button>
-                  <button
-                    onClick={() => scroll(allMangasRef, 300)}
-                    className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full p-2 z-10 mr hover:bg-pink transition duration-300"
-                  >
-                    <FaChevronRight size={24} />
-                  </button>
-                </>
-              )}
             </div>
-          </div>
+          )
         )}
       </div>
     </main>

@@ -39,7 +39,7 @@ export default function ReadList() {
 
   return (
     <main className="flex flex-col items-center justify-center p-8">
-      <h1 className="text-3xl mb-8">Ma Readlist</h1>
+      <h1 className="text-3xl mb-8 font-semibold">Mes favoris</h1>
       <div className="w-full max-w-7xl">
         {readlist.length === 0 ? (
           <p className="text-center">Votre readlist est vide.</p>
